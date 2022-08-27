@@ -19,7 +19,7 @@ public class Trie implements ITrie {
             if (!currentTrieNode.children.containsKey(character)) { //check if the character exist in its children node
                 currentTrieNode.children.put(character, new TrieNode()); //no, add the character and create new sub trie
             }
-            TrieNode nextTrieNode = currentTrieNode.children.get(character); 
+            TrieNode nextTrieNode = currentTrieNode.children.get(character);
             currentTrieNode = nextTrieNode; //traverse to next trie
         }
 
@@ -33,6 +33,7 @@ public class Trie implements ITrie {
         return wordTrie != null && wordTrie.isWord;
     }
 
+    @Override
     public TrieNode findWord(String word) {
 
         TrieNode currentTrieNode = root; //began at root
@@ -53,18 +54,18 @@ public class Trie implements ITrie {
 
     @Override
     public ArrayList<String> findWordsThatContain(String substring) {
-        TrieNode currentTrieNode = root;
-        ArrayList<String> wordsWithSubstring = new ArrayList<String>();
+        TrieNode currentTrieNode = root; //began at the root
+        ArrayList<String> wordsWithSubstring = new ArrayList<String>(); //storage for the words with the substring 
 
-        if (currentTrieNode.isWord && currentTrieNode.word.contains(substring)) {
-            wordsWithSubstring.add(currentTrieNode.word);
+        if (currentTrieNode.isWord && currentTrieNode.word.contains(substring)) { //check if the node is a word and contains the substring
+            wordsWithSubstring.add(currentTrieNode.word); //yes, add the word to the storage
         }
-        if (!currentTrieNode.children.isEmpty()) {
+        if (!currentTrieNode.children.isEmpty()) { //check if the node has children
             Set<Character> nodes = currentTrieNode.children.keySet();
 
             nodes.forEach(node -> {
-                TrieNode nextNode = currentTrieNode.children.get(node);
-                findWordsThatContain(nextNode, wordsWithSubstring, substring);
+                TrieNode nextNode = currentTrieNode.children.get(node); //get all the children nodes
+                findWordsThatContain(nextNode, wordsWithSubstring, substring); //repeat for children nodes
             });
         }
 
@@ -72,50 +73,50 @@ public class Trie implements ITrie {
     }
 
     public void findWordsThatContain(TrieNode nextNode, ArrayList<String> wordsWithSubstring, String substring) {
-        TrieNode currentTrieNode = nextNode;
-        if (currentTrieNode.isWord && currentTrieNode.word.contains(substring)) {
-            wordsWithSubstring.add(currentTrieNode.word);
+        TrieNode currentTrieNode = nextNode; //began at the childrens node
+        if (currentTrieNode.isWord && currentTrieNode.word.contains(substring)) { //check if the children node is a word and contains the substring
+            wordsWithSubstring.add(currentTrieNode.word); //yes, add the word to the storage
         }
-        if (!currentTrieNode.children.isEmpty()) {
+        if (!currentTrieNode.children.isEmpty()) { //check if the children node has children
             Set<Character> nodes = currentTrieNode.children.keySet();
 
             nodes.forEach(node -> {
-                TrieNode nextNodeOfChildren = currentTrieNode.children.get(node);
-                findWordsThatContain(nextNodeOfChildren, wordsWithSubstring, substring);
+                TrieNode nextNodeOfChildren = currentTrieNode.children.get(node); //get all the children nodes of the children node
+                findWordsThatContain(nextNodeOfChildren, wordsWithSubstring, substring); //repeat for children nodes of the children nodes
             });
         }
     }
 
     @Override
     public void print() {
-        TrieNode currentTrieNode = root;
-        if (currentTrieNode.isWord) {
-            System.out.println(currentTrieNode.word);
+        TrieNode currentTrieNode = root; //began at the root
+        if (currentTrieNode.isWord) { //check if the node is a word
+            System.out.println(currentTrieNode.word); //yes, print the word
         }
-        if (!currentTrieNode.children.isEmpty()) {
+        if (!currentTrieNode.children.isEmpty()) {  //check if the children node has children
             Set<Character> nodes = currentTrieNode.children.keySet();
 
             nodes.forEach(node
                     -> {
-                TrieNode nextNode = currentTrieNode.children.get(node);
-                print(nextNode);
+                TrieNode nextNode = currentTrieNode.children.get(node); //get all the children nodes
+                print(nextNode); //repeat for children nodes
             });
         }
     }
 
     public void print(TrieNode nextNode) {
-        TrieNode currentTrieNode = nextNode;
-        if (currentTrieNode.isWord) {
-            System.out.println(currentTrieNode.word);
+        TrieNode currentTrieNode = nextNode; //began at the children node
+        if (currentTrieNode.isWord) { //check if the children node is a word
+            System.out.println(currentTrieNode.word); //yes, print the word
         }
 
-        if (!currentTrieNode.children.isEmpty()) {
+        if (!currentTrieNode.children.isEmpty()) { //check if the children node has children
             Set<Character> nodes = currentTrieNode.children.keySet();
 
             nodes.forEach(node
                     -> {
-                TrieNode nextNodeOfChildren = currentTrieNode.children.get(node);
-                print(nextNodeOfChildren);
+                TrieNode nextNodeOfChildren = currentTrieNode.children.get(node); //get all the children nodes of children nodes
+                print(nextNodeOfChildren); //repeat for children nodes of the children nodes
             });
         }
     }

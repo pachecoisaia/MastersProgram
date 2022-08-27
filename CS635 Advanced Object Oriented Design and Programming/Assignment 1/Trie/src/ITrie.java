@@ -7,6 +7,8 @@ public interface ITrie {
 
     public boolean doesWordExist(String word);
 
+    public TrieNode findWord(String word);
+
     public ArrayList<String> findWordsThatContain(String substring);
 
     public void print();

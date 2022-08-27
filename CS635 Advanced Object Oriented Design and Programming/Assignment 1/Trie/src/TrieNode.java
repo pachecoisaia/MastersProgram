@@ -9,7 +9,7 @@ public class TrieNode {
 
     public TrieNode() {
         word = null;
-        isWord= false;
+        isWord = false;
         children = new HashMap<>();
     }
 
