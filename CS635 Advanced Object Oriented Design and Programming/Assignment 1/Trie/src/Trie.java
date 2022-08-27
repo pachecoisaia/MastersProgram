@@ -33,12 +33,6 @@ public class Trie implements ITrie {
     }
 
     @Override
-    public boolean startsWith(String prefix) {
-        TrieNode subTrie = getTrieNode(prefix);
-        return subTrie != null;
-    }
-
-    @Override
     public void print() {
         TrieNode currentTrieNode = root;
         if (currentTrieNode.isWord) {
@@ -55,7 +49,7 @@ public class Trie implements ITrie {
     }
 
     @Override
-    public void findAllWordsWithSubString(String substring) {
+    public ArrayList<String> findWordsThatContain(String substring) {
         TrieNode currentTrieNode = root;
         ArrayList<String> validWords = new ArrayList<String>();
 
@@ -67,11 +61,11 @@ public class Trie implements ITrie {
 
             keys.forEach(key
                     -> {
-                findAllWordsWithSubString(currentTrieNode.children.get(key), validWords, substring);
+                findWordsThatContain(currentTrieNode.children.get(key), validWords, substring);
             });
         }
 
-        System.out.println(validWords);
+        return validWords;
     }
 
     public void print(TrieNode node) {
@@ -107,7 +101,7 @@ public class Trie implements ITrie {
 
     }
 
-    public void findAllWordsWithSubString(TrieNode node, ArrayList<String> validWords, String substring) {
+    public void findWordsThatContain(TrieNode node, ArrayList<String> validWords, String substring) {
         TrieNode currentTrieNode = node;
         if (currentTrieNode.isWord && currentTrieNode.word.contains(substring)) {
             validWords.add(currentTrieNode.word);
@@ -117,7 +111,7 @@ public class Trie implements ITrie {
 
             keys.forEach(key
                     -> {
-                findAllWordsWithSubString(currentTrieNode.children.get(key), validWords, substring);
+                findWordsThatContain(currentTrieNode.children.get(key), validWords, substring);
             });
         }
     }
@@ -129,7 +123,9 @@ public class Trie implements ITrie {
         trie.add("isaiat");
         trie.find("max");
         trie.print();
-        trie.findAllWordsWithSubString("a");
+        
+        ArrayList<String> wordsWithSubstring = trie.findWordsThatContain("a");
+        System.out.println(wordsWithSubstring);
 
     }
 }

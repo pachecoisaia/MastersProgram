@@ -5,9 +5,12 @@ public class TrieNode {
 
     public String word;
     public boolean isWord = false;
-    public HashMap<Character, TrieNode> children = new HashMap<>();
+    public HashMap<Character, TrieNode> children;
 
     public TrieNode() {
+        word = "";
+        isWord= false;
+        children = new HashMap<>();
     }
 
     @Override
