@@ -8,7 +8,7 @@ public class TrieNode {
     public HashMap<Character, TrieNode> children;
 
     public TrieNode() {
-        word = "";
+        word = null;
         isWord= false;
         children = new HashMap<>();
     }
