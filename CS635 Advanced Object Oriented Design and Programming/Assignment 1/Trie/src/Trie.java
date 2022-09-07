@@ -42,7 +42,7 @@ public class Trie implements ITrie {
 
             if (!currentTrieNode.children.containsKey(character)) //check if the character exist in its children node
             {
-                currentTrieNode.children.put(character, new TrieNode()); //no, add the character and create new sub trie
+                return null; //word doesnt exist
             }
             TrieNode nextTrieNode = currentTrieNode.children.get(character);
             currentTrieNode = nextTrieNode; //traverse to next trie
@@ -123,10 +123,12 @@ public class Trie implements ITrie {
 
     public static void main(String[] args) {
         Trie trie = new Trie();
+        System.out.println(trie.findWord("nicole"));
         trie.add("isaia");
         trie.add("isaias");
         trie.add("isaiat");
-        trie.doesWordExist("max");
+        System.out.println(trie.findWord("isa"));
+        System.out.println(trie.doesWordExist("max"));
         trie.print();
         ArrayList<String> wordsWithSubstring = trie.findWordsThatContain("a");
         System.out.println(wordsWithSubstring);
