@@ -1,10 +1,39 @@
 #include "logger.h"
 
-LogLevel Logger::current_level = LogLevel::INFO;
+#undef CLASS_NAME
+#define CLASS_NAME "Logger"
+
+LogLevel Logger::current_level = DEFAULT_LOG_LEVEL;
+unsigned long Logger::baud_rate_ = DEFAULT_BAUD_RATE;
+
+// Singleton instance
+Logger& Logger::instance() {
+  static Logger instance;
+  return instance;
+}
+
+// Private constructor
+Logger::Logger() {
+  // Constructor body (if needed in future)
+}
 
 void Logger::init(unsigned long baud_rate) {
   Serial.begin(baud_rate);
   delay(15);
+}
+
+// Non-static configure() override from Configurable
+void Logger::configure() {
+  configure(baud_rate_, current_level);
+}
+
+// Static configure() with parameters
+void Logger::configure(unsigned long baud_rate, LogLevel level) {
+  baud_rate_ = baud_rate;
+  init(baud_rate);
+  delay(1000);  // Wait for serial to be ready
+  set_log_level(level);
+  log_info(CLASS_NAME, __FUNCTION__, "Logger configured");
 }
 
 const char* Logger::level_to_string(LogLevel level) {

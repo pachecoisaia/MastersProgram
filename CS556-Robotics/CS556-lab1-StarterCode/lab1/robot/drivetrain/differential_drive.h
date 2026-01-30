@@ -2,6 +2,7 @@
 #define differential_drive_h
 
 #include <Pololu3piPlus32U4.h>
+#include "../configurable.h"
 #include "../utils/logger.h"
 using namespace Pololu3piPlus32U4;
 
@@ -49,13 +50,27 @@ enum class TurnMode {
   DURATION    // Rotation based on time duration in seconds
 };
 
-class DifferentialDrive {
+// Default configuration constants for Pololu 3pi+ robot
+const float DEFAULT_WHEELBASE_MM = 96.0f;  // Distance between left and right wheels
+const float DEFAULT_TURN_SPEED_RATIO = 0.5f;  // Inner wheel speed as fraction of outer wheel speed
+const bool DEFAULT_FLIP_LEFT_MOTOR = false;  // Set to true if left motor is wired backwards
+const bool DEFAULT_FLIP_RIGHT_MOTOR = false;  // Set to true if right motor is wired backwards
+
+class DifferentialDrive : public Configurable {
   public:
     // Purpose: Initialize differential drive with Pololu Motors
     // Description: Creates instance with reference to the robot's Motors controller
     // Args: None
     // Return: void
     DifferentialDrive();
+    
+    // ========== CONFIGURATION ==========
+    
+    // Purpose: Configure the differential drive with default settings
+    // Description: Applies default configuration for turn speed ratio, wheelbase, and motor directions
+    // Args: None
+    // Return: void
+    void configure() override;
     
     // ========== MOTION PRIMITIVES ==========
     
@@ -73,39 +88,39 @@ class DifferentialDrive {
     // Return: void
     void move_backward(float distance_m, float speed_m_per_s);
     
-    // Purpose: Rotate robot counterclockwise in place for a specified angle
-    // Description: Left wheel backward, right wheel forward
-    //   Uses physics formula: theta = (2*v/L) * t, solved for t = theta * L / (2*v)
-    // Args: angle_rad - rotation angle in radians (positive)
-    //       speed_m_per_s - rotation speed in m/s (0.0 to 0.4)
-    // Return: void
-    void turn_left(float angle_rad, float speed_m_per_s);
-    
     // Purpose: Rotate robot counterclockwise in place for a specified duration
     // Description: Left wheel backward, right wheel forward
-    //   Direct time-based control without angle calculation
+    //   Default behavior matches TurnMode::DURATION
     // Args: duration_s - rotation duration in seconds
     //       speed_m_per_s - rotation speed in m/s (0.0 to 0.4)
-    //       mode - must be TurnMode::DURATION to use duration-based control
     // Return: void
-    void turn_left(float duration_s, float speed_m_per_s, TurnMode mode);
+    void turn_left(float duration_s, float speed_m_per_s);
     
-    // Purpose: Rotate robot clockwise in place for a specified angle
-    // Description: Right wheel backward, left wheel forward
-    //   Uses physics formula: theta = (2*v/L) * t, solved for t = theta * L / (2*v)
-    // Args: angle_rad - rotation angle in radians (positive)
+    // Purpose: Rotate robot counterclockwise with mode selection
+    // Description: Left wheel backward, right wheel forward
+    //   Mode switches between angle-based and duration-based control
+    // Args: thetaOrTime - rotation angle (rad) if ANGLE mode, or duration (s) if DURATION mode
     //       speed_m_per_s - rotation speed in m/s (0.0 to 0.4)
+    //       mode - TurnMode::ANGLE or TurnMode::DURATION (default: DURATION)
     // Return: void
-    void turn_right(float angle_rad, float speed_m_per_s);
+    void turn_left(float thetaOrTime, float speed_m_per_s, TurnMode mode = TurnMode::DURATION);
     
     // Purpose: Rotate robot clockwise in place for a specified duration
     // Description: Right wheel backward, left wheel forward
-    //   Direct time-based control without angle calculation
+    //   Default behavior matches TurnMode::DURATION
     // Args: duration_s - rotation duration in seconds
     //       speed_m_per_s - rotation speed in m/s (0.0 to 0.4)
-    //       mode - must be TurnMode::DURATION to use duration-based control
     // Return: void
-    void turn_right(float duration_s, float speed_m_per_s, TurnMode mode);
+    void turn_right(float duration_s, float speed_m_per_s);
+    
+    // Purpose: Rotate robot clockwise with mode selection
+    // Description: Right wheel backward, left wheel forward
+    //   Mode switches between angle-based and duration-based control
+    // Args: thetaOrTime - rotation angle (rad) if ANGLE mode, or duration (s) if DURATION mode
+    //       speed_m_per_s - rotation speed in m/s (0.0 to 0.4)
+    //       mode - TurnMode::ANGLE or TurnMode::DURATION (default: DURATION)
+    // Return: void
+    void turn_right(float thetaOrTime, float speed_m_per_s, TurnMode mode = TurnMode::DURATION);
     
     // Purpose: Move robot forward while turning left
     // Description: Left wheel reduced speed, right wheel forward speed
@@ -138,41 +153,6 @@ class DifferentialDrive {
     //       speed_m_per_s - outer wheel speed in m/s (0.0 to 0.4)
     // Return: void
     void move_backward_turning_right(float distance_m, float speed_m_per_s);
-    
-  private:
-    // ========== LOW-LEVEL MOTOR CONTROL ==========
-    
-    // Purpose: Set motor speeds for the left and right wheels
-    // Description: Directly controls the left and right wheel DC motors in their raw speed range
-    //   Positive = forward, Negative = backward
-    // Args: left_speed_mm_per_s - left motor speed (typically -400 to 400)
-    //       right_speed_mm_per_s - right motor speed (typically -400 to 400)
-    // Return: void
-    void set_wheel_speeds(int left_speed_mm_per_s, int right_speed_mm_per_s);
-    
-    // Purpose: Move both wheels forward at the same speed
-    // Description: Drives both DC motors at identical forward speed for straight-line motion
-    // Args: speed_mm_per_s - forward speed of both motors (typically 0 to 400)
-    // Return: void
-    void drive_forward(int speed_mm_per_s);
-    
-    // Purpose: Move both wheels backward at the same speed
-    // Description: Drives both DC motors at identical backward speed for straight-line motion
-    // Args: speed_mm_per_s - backward speed of both motors (typically 0 to 400)
-    // Return: void
-    void drive_backward(int speed_mm_per_s);
-    
-    // Purpose: Rotate in place counterclockwise (low-level)
-    // Description: Runs left DC motor backward and right DC motor forward at same speed
-    // Args: speed_mm_per_s - rotational speed (typically 0 to 400)
-    // Return: void
-    void turn_left_low_level(int speed_mm_per_s);
-    
-    // Purpose: Rotate in place clockwise (low-level)
-    // Description: Runs right DC motor backward and left DC motor forward at same speed
-    // Args: speed_mm_per_s - rotational speed (typically 0 to 400)
-    // Return: void
-    void turn_right_low_level(int speed_mm_per_s);
     
     // ========== CONFIGURATION ==========
     
@@ -223,10 +203,53 @@ class DifferentialDrive {
     // Return: void
     void halt();
     
+  private:
+    // ========== LOW-LEVEL MOTOR CONTROL ==========
+    
+    // Purpose: Set motor speeds for the left and right wheels
+    // Description: Directly controls the left and right wheel DC motors in their raw speed range
+    //   Positive = forward, Negative = backward
+    // Args: left_speed_mm_per_s - left motor speed (typically -400 to 400)
+    //       right_speed_mm_per_s - right motor speed (typically -400 to 400)
+    // Return: void
+    void set_wheel_speeds(int left_speed_mm_per_s, int right_speed_mm_per_s);
+    
+    // Purpose: Move both wheels forward at the same speed
+    // Description: Drives both DC motors at identical forward speed for straight-line motion
+    // Args: speed_mm_per_s - forward speed of both motors (typically 0 to 400)
+    // Return: void
+    void drive_forward(int speed_mm_per_s);
+    
+    // Purpose: Move both wheels backward at the same speed
+    // Description: Drives both DC motors at identical backward speed for straight-line motion
+    // Args: speed_mm_per_s - backward speed of both motors (typically 0 to 400)
+    // Return: void
+    void drive_backward(int speed_mm_per_s);
+    
+    // Purpose: Rotate in place counterclockwise (low-level)
+    // Description: Runs left DC motor backward and right DC motor forward at same speed
+    // Args: speed_mm_per_s - rotational speed (typically 0 to 400)
+    // Return: void
+    void turn_left_low_level(int speed_mm_per_s);
+    
+    // Purpose: Rotate in place clockwise (low-level)
+    // Description: Runs right DC motor backward and left DC motor forward at same speed
+    // Args: speed_mm_per_s - rotational speed (typically 0 to 400)
+    // Return: void
+    void turn_right_low_level(int speed_mm_per_s);
+    
+    // Helper methods for duration-based turning
+    void turn_left_duration(float duration_s, float speed_m_per_s);
+    void turn_right_duration(float duration_s, float speed_m_per_s);
+    
+    // Helper methods for angle-based turning
+    void turn_left_angle(float angle_rad, float speed_m_per_s);
+    void turn_right_angle(float angle_rad, float speed_m_per_s);
+    
     // ========== DATA MEMBERS ==========
     
     // Two independently controlled DC motors (left and right wheels)
-    Motors* motors;               // Pololu Motors class controlling both DC motors
+    Motors motors;                // Pololu Motors class controlling both DC motors
     float turn_speed_ratio;       // Inner wheel speed multiplier [0.0, 1.0]
     float wheelbase_mm;           // Distance between left and right wheels (mm)
 };

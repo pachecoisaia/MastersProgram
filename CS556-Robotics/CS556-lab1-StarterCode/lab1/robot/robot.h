@@ -10,11 +10,11 @@
 //
 // Architecture:
 //   - DifferentialDrive (public 'drive' member): Complete motor and motion control
-//     - Low-level control: set_wheel_speeds(left, right)
-//     - Basic motion: drive_forward(), drive_backward(), turn_left(), turn_right()
-//     - High-level motion: move_forward(), move_backward(), turn_left(), turn_right()
-//     - Curved motion: move_forward_turning_left/right(), move_backward_turning_left/right()
-//     - Configuration: set_turn_speed_ratio(), flip_left_motor(), flip_right_motor()
+//     - Low-level control: Direct wheel speed commands - set_wheel_speeds(left, right)
+//     - Basic motion: Simple directional commands without distance/speed parameters
+//     - High-level motion: Distance-based movement with speed control
+//     - Curved motion: Combined forward/backward movement with simultaneous turning
+//     - Configuration: Setup functions for motor flipping and turn speed ratios
 //     - Stop: halt()
 //   
 //   - Robot: Robot initialization with configuration

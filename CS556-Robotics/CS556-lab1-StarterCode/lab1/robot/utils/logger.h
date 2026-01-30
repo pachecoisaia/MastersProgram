@@ -1,6 +1,7 @@
 #ifndef logger_h
 #define logger_h
 #include <Arduino.h>
+#include "../configurable.h"
 
 enum class LogLevel {
   DEBUG = 0,
@@ -9,9 +10,22 @@ enum class LogLevel {
   ERROR = 3
 };
 
-class Logger {
+// Default configuration constants for Logger
+const unsigned long DEFAULT_BAUD_RATE = 9600;
+const LogLevel DEFAULT_LOG_LEVEL = LogLevel::INFO;
+
+class Logger : public Configurable {
   public:
-    static void init(unsigned long baud_rate = 9600);
+    // Singleton instance access
+    static Logger& instance();
+    
+    // Delete copy constructor and assignment operator
+    Logger(const Logger&) = delete;
+    Logger& operator=(const Logger&) = delete;
+    
+    static void init(unsigned long baud_rate = DEFAULT_BAUD_RATE);
+    void configure() override;  // Non-static override from Configurable
+    static void configure(unsigned long baud_rate = DEFAULT_BAUD_RATE, LogLevel level = DEFAULT_LOG_LEVEL);  // Static convenience method
     
     // Core logging function with timestamp and location info
     static void log(LogLevel level, const char* class_name, const char* function_name, const char* message);
@@ -25,7 +39,9 @@ class Logger {
     static void set_log_level(LogLevel level);
     
   private:
+    Logger();  // Private constructor for singleton
     static LogLevel current_level;
+    static unsigned long baud_rate_;
     static const char* level_to_string(LogLevel level);
     static unsigned long get_timestamp_ms();
 };
