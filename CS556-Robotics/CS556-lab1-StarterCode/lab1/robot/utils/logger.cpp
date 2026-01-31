@@ -19,6 +19,7 @@ Logger::Logger() {
 
 void Logger::init(unsigned long baud_rate) {
   Serial.begin(baud_rate);
+  while (!Serial) {}  // Wait for USB serial connection (ATmega32U4)
   delay(15);
 }
 
