@@ -61,9 +61,9 @@ Starter code for Lab 1 of CS556 Robotics course. This lab implements differentia
 
 [View PreLab_DraftCode](https://drive.google.com/file/d/125h32c9I7apvUuhTpwxk_ARr2FRwo2KY/view?usp=drive_link)
 
-[View PostLab_Video_Task6.a- MotionPrimitives](https://drive.google.com/file/d/1CXQdw8B7wTA7BcKb5o3bxhKXi4BKB23x/view?usp=drive_link)
+[View PostLab_Video_Task6.a- MotionPrimitives](https://drive.google.com/file/d/1KxT8aBqgEpfLVqgrvEV15l-ZdrbobF5c/view?usp=drive_link)
 
-[View PostLab_Video_Task7.a-ClassAndModules](https://drive.google.com/file/d/1CXQdw8B7wTA7BcKb5o3bxhKXi4BKB23x/view?usp=drive_link)
+[View PostLab_Video_Task7.a-ClassAndModules](https://drive.google.com/file/d/1KxT8aBqgEpfLVqgrvEV15l-ZdrbobF5c/view?usp=drive_link)
 
 [View PostLab_Tasksheet_6.b](https://drive.google.com/file/d/1Ghw5M7xH8ELBuyj5jlki32oxYifMITIW/view?usp=drive_link)
 
