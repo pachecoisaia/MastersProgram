@@ -1,12 +1,14 @@
 #ifndef robot_h
 #define robot_h
 #include "drivetrain/differential_drive.h"
+#include "sensors/sonar.h"
+#include "actuators/servo_controller.h"
 
 // ============================================================
 // POLOLU 3PI+ ROBOT CONTROL
 // ============================================================
 //
-// Purpose: Robot initialization interface for Pololu 3pi+ differential drive
+// Purpose: Robot initialization interface for Pololu 3pi+ robot with sensors and actuators
 //
 // Architecture:
 //   - DifferentialDrive (public 'drive' member): Complete motor and motion control
@@ -17,15 +19,26 @@
 //     - Configuration: Setup functions for motor flipping and turn speed ratios
 //     - Stop: halt()
 //   
+//   - Sonar (public 'sonar' member): Ultrasonic distance sensing
+//     - Distance measurement: Single and averaged readings in cm
+//     - Configuration: Pin assignment, timeout, sample count
+//     - Validation: Range checking and error handling
+//   
+//   - ServoController (public 'servo' member): Servo motor positioning
+//     - Position control: Angle-based positioning (0-180°)
+//     - Smooth movement: Speed-controlled transitions
+//     - Sweep functions: Automated scanning patterns
+//     - Configuration: Pin assignment, speed control
+//   
 //   - Robot: Robot initialization with configuration
-//     - Constructors initialize DifferentialDrive with optional turn_speed_ratio
-//     - Exposes public 'drive' member for all motion and configuration
+//     - Constructors initialize all subsystems (drive, sonar, servo)
+//     - Exposes public members for all subsystem access
 //
 // Usage:
 //   Robot robot;
 //   robot.drive->move_forward(1.0, 0.2);        // Motion through drive
-//   robot.drive->flip_left_motor(true);         // Config through drive
-//   robot.drive->set_turn_speed_ratio(0.6);     // Config through drive
+//   robot.sonar->read_distance_cm();            // Distance sensing through sonar
+//   robot.servo->move_to_angle(90);             // Servo positioning
 //
 // ============================================================
 // ============================================================
@@ -39,8 +52,10 @@ class Robot {
     Robot();
     
     
-    // Public motor and motion abstraction
-    DifferentialDrive* drive;
+    // Public subsystem abstractions
+    DifferentialDrive* drive;   // Drivetrain control
+    Sonar* sonar;               // Distance sensor
+    ServoController* servo;     // Servo actuator
 };
 
 #endif
