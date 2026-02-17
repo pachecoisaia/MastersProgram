@@ -51,7 +51,8 @@ enum class TurnMode {
 };
 
 // Default configuration constants for Pololu 3pi+ robot
-const float DEFAULT_WHEELBASE_MM = 96.0f;  // Distance between left and right wheels
+// Updated to match the provided wheelbase (distance between wheel centers).
+const float DEFAULT_WHEELBASE_MM = 98.0f;  // Distance between left and right wheels [mm]
 const float DEFAULT_TURN_SPEED_RATIO = 0.5f;  // Inner wheel speed as fraction of outer wheel speed
 const bool DEFAULT_FLIP_LEFT_MOTOR = false;  // Set to true if left motor is wired backwards
 const bool DEFAULT_FLIP_RIGHT_MOTOR = false;  // Set to true if right motor is wired backwards

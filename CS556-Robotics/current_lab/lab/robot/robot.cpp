@@ -9,11 +9,12 @@
 
 Robot::Robot() {
   Logger::log_info(CLASS_NAME, __FUNCTION__, "Robot initialized with default configuration");
-  
-  // Initialize all subsystems
+
   drive = new DifferentialDrive();
+  navigator = new Navigator();
   sonar = new Sonar();
   servo = new ServoController();
-  
+  display = new Display();
+
   Logger::log_info(CLASS_NAME, __FUNCTION__, "All subsystems initialized");
 }

@@ -1,9 +1,4 @@
 #include "util.h"
-#include <math.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 // Utility functions
 int convert_speed_to_mm_per_s(float speed, float base_speed) {
@@ -104,4 +99,38 @@ float mm_per_s_to_meters_per_s(float mm_per_s) {
 // Solving for t: t = theta * L / (2*v)
 float calculate_turn_duration_s(float angle_rad, float wheelbase_mm, float speed_mm_per_s) {
   return (angle_rad * wheelbase_mm) / (2.0f * speed_mm_per_s);
+}
+
+// ========== Odometry math helpers ==========
+
+float compute_wheel_distance(int counts, float diameter, float counts_per_rev) {
+  return (float)(M_PI * diameter * (float)counts / counts_per_rev);
+}
+
+float compute_ticks_per_rev(float n, float gearRatio) {
+  return n * gearRatio;
+}
+
+float compute_delta_l(float leftCountsDelta, float wheelDiameterL, float leftCountsPerWheelRev) {
+  return (float)(M_PI * wheelDiameterL * (float)leftCountsDelta / leftCountsPerWheelRev);
+}
+
+float compute_delta_r(float rightCountsDelta, float wheelDiameterR, float rightCountsPerWheelRev) {
+  return (float)(M_PI * wheelDiameterR * (float)rightCountsDelta / rightCountsPerWheelRev);
+}
+
+float compute_d_theta(float delta_r, float delta_l, float w) {
+  return (delta_r - delta_l) / w;
+}
+
+float compute_dtheta_imu(float gyro_z, float dt) {
+  return gyro_z * 0.0174533f * dt; // deg to rad
+}
+
+float compute_delta_x(float delta_l, float delta_r, float theta) {
+  return (delta_l + delta_r) / 2.0f * cosf(theta);
+}
+
+float compute_delta_y(float delta_l, float delta_r, float theta) {
+  return (delta_l + delta_r) / 2.0f * sinf(theta);
 }

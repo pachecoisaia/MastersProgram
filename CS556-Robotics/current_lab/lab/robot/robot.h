@@ -3,6 +3,9 @@
 #include "drivetrain/differential_drive.h"
 #include "sensors/sonar.h"
 #include "actuators/servo_controller.h"
+#include "display/display.h"
+#include "navigator/navigator.h"
+#include "display/display.h"
 
 // ============================================================
 // POLOLU 3PI+ ROBOT CONTROL
@@ -29,9 +32,13 @@
 //     - Smooth movement: Speed-controlled transitions
 //     - Sweep functions: Automated scanning patterns
 //     - Configuration: Pin assignment, speed control
+//
+//   - Display (public 'display' member): OLED display helpers
+//     - Encoder printing
+//     - Pose (odometry) printing
 //   
 //   - Robot: Robot initialization with configuration
-//     - Constructors initialize all subsystems (drive, sonar, servo)
+//     - Constructors initialize all subsystems (drive, navigator, sonar, servo, display)
 //     - Exposes public members for all subsystem access
 //
 // Usage:
@@ -54,8 +61,10 @@ class Robot {
     
     // Public subsystem abstractions
     DifferentialDrive* drive;   // Drivetrain control
+    Navigator* navigator;        // Encoders + odometry pose tracking
     Sonar* sonar;               // Distance sensor
     ServoController* servo;     // Servo actuator
+    Display* display;           // OLED display helper
 };
 
 #endif

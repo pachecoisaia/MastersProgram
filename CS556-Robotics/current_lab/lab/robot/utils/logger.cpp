@@ -1,10 +1,25 @@
 #include "logger.h"
 
+#if defined(__AVR_ATmega32U4__)
+#include <avr/io.h>
+#endif
+
 #undef CLASS_NAME
 #define CLASS_NAME "Logger"
 
 LogLevel Logger::current_level = DEFAULT_LOG_LEVEL;
 unsigned long Logger::baud_rate_ = DEFAULT_BAUD_RATE;
+bool Logger::serial_enabled_ = false;
+
+static bool usb_power_present_() {
+#if defined(__AVR_ATmega32U4__)
+  // Matches Pololu3piPlus32U4::usbPowerPresent(): USBSTA >> VBUS & 1
+  return ((USBSTA >> VBUS) & 1) != 0;
+#else
+  // On non-32U4 targets, assume serial is available.
+  return true;
+#endif
+}
 
 // Singleton instance
 Logger& Logger::instance() {
@@ -18,9 +33,17 @@ Logger::Logger() {
 }
 
 void Logger::init(unsigned long baud_rate) {
-  Serial.begin(baud_rate);
-  while (!Serial) {}  // Wait for USB serial connection (ATmega32U4)
-  delay(15);
+  // Non-blocking: only start Serial if the robot has USB power.
+  if (!usb_power_present_()) {
+    serial_enabled_ = false;
+    return;
+  }
+
+  // Avoid reinitializing if we've already started it.
+  if (!serial_enabled_) {
+    Serial.begin(baud_rate);
+    serial_enabled_ = true;
+  }
 }
 
 // Non-static configure() override from Configurable
@@ -32,7 +55,6 @@ void Logger::configure() {
 void Logger::configure(unsigned long baud_rate, LogLevel level) {
   baud_rate_ = baud_rate;
   init(baud_rate);
-  delay(1000);  // Wait for serial to be ready
   set_log_level(level);
   log_info(CLASS_NAME, __FUNCTION__, "Logger configured");
 }
@@ -52,16 +74,18 @@ const char* Logger::level_to_string(LogLevel level) {
   }
 }
 
-unsigned long Logger::get_timestamp_ms() {
-  return millis();
-}
-
 void Logger::log(LogLevel level, const char* class_name, const char* function_name, const char* message) {
   if (level >= current_level) {
-    unsigned long timestamp = get_timestamp_ms();
+    // If we booted without USB, allow logging to start later
+    // when USB is plugged in (without blocking).
+    if (!serial_enabled_) {
+      init(baud_rate_);
+      if (!serial_enabled_) {
+        return;
+      }
+    }
+
     Serial.print("[");
-    Serial.print(timestamp);
-    Serial.print("ms] [");
     Serial.print(level_to_string(level));
     Serial.print("] ");
     Serial.print(class_name);

@@ -1,6 +1,12 @@
 #ifndef util_h
 #define util_h
 
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 // Utility functions for unit conversions
 int convert_speed_to_mm_per_s(float speed, float base_speed);
 int convert_duration_to_ms(float duration);
@@ -45,5 +51,27 @@ float mm_per_s_to_meters_per_s(float mm_per_s);
 // Calculates duration (seconds) needed to turn angle_rad at given speed
 // Using formula: theta = (2*v/L) * t => t = theta * L / (2*v)
 float calculate_turn_duration_s(float angle_rad, float wheelbase_mm, float speed_mm_per_s);
+
+// ========== Odometry math helpers ==========
+
+// Distance traveled by a wheel for a given encoder count (increment).
+float compute_wheel_distance(int counts, float diameter, float counts_per_rev);
+
+// Convert encoder counts-per-motor-rev (n) to counts-per-wheel-rev.
+float compute_ticks_per_rev(float n, float gearRatio);
+
+// Per-wheel arc lengths from encoder count deltas.
+float compute_delta_l(float leftCountsDelta, float wheelDiameterL, float leftCountsPerWheelRev);
+float compute_delta_r(float rightCountsDelta, float wheelDiameterR, float rightCountsPerWheelRev);
+
+// Heading change from wheel deltas.
+float compute_d_theta(float delta_r, float delta_l, float w);
+
+// Heading change from gyro z-rate (deg/s) over dt (s).
+float compute_dtheta_imu(float gyro_z, float dt);
+
+// Body-frame translation projected into world frame.
+float compute_delta_x(float delta_l, float delta_r, float theta);
+float compute_delta_y(float delta_l, float delta_r, float theta);
 
 #endif

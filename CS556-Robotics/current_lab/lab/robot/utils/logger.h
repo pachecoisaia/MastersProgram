@@ -42,8 +42,8 @@ class Logger : public Configurable {
     Logger();  // Private constructor for singleton
     static LogLevel current_level;
     static unsigned long baud_rate_;
+      static bool serial_enabled_;
     static const char* level_to_string(LogLevel level);
-    static unsigned long get_timestamp_ms();
 };
 
 // Convenience macros for logging with class and function name
