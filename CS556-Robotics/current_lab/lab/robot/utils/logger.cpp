@@ -93,6 +93,7 @@ void Logger::log(LogLevel level, const char* class_name, const char* function_na
     Serial.print(function_name);
     Serial.print("() - ");
     Serial.println(message);
+    Serial.flush();
   }
 }
 
