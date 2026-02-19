@@ -3,9 +3,9 @@
 
 #include "../utils/util.h"
 
-const float SQUARE_DIST_M = 15.0f;                   // [m]
+const float SQUARE_DIST_M = 1.0f;                   // [m]
 const float SQUARE_SPEED_MPS = 0.2f;                 // [m/s]
-const float SQUARE_ANGLE_RAD = ((float)M_PI / 2.0f); // [rad]
+const float SQUARE_ANGLE_RAD = degrees_to_radians(90.0f); // [rad] = 90 deg
 const float ONE_METER_DIST = 1.0f;                   // [m]
 const float SAFE_SPEED_MPS = 0.2f;                   // [m/s]
 

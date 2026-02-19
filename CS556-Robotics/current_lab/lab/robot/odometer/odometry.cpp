@@ -33,26 +33,21 @@ void Odometry::configure() {
   encoderLeftCountsPerMotorRev = ENCODER_LEFT_COUNTS_PER_MOTOR_REV;
   encoderRightCountsPerMotorRev = ENCODER_RIGHT_COUNTS_PER_MOTOR_REV;
   motorRevsPerWheelRev = MOTOR_REVS_PER_WHEEL_REV;
+
+  leftCountsPerWheelRev = compute_ticks_per_rev(encoderLeftCountsPerMotorRev, motorRevsPerWheelRev);
+  rightCountsPerWheelRev = compute_ticks_per_rev(encoderRightCountsPerMotorRev, motorRevsPerWheelRev);
 }
 
 // ========== UPDATE (ENCODERS ONLY) ==========
 // Wheel kinematics provide both translation and heading.
-void Odometry::update_odom(int deltaLeftCounts, int deltaRightCounts, float &x, float &y, float &theta) {
-	Logger::log_info(CLASS_NAME, __FUNCTION__, "Updating odometry");
-
-  // Encoder count deltas since last update.
-  int leftCountsDelta = deltaLeftCounts;
-  int rightCountsDelta = deltaRightCounts;
-
-  // Counts per wheel revolution = counts per motor revolution * motor revs per wheel rev.
-  float leftCountsPerWheelRev = compute_ticks_per_rev(encoderLeftCountsPerMotorRev, motorRevsPerWheelRev);
-  float rightCountsPerWheelRev = compute_ticks_per_rev(encoderRightCountsPerMotorRev, motorRevsPerWheelRev);
+void Odometry::update_odom(int32_t deltaLeftCounts, int32_t deltaRightCounts, float &x, float &y, float &theta) {
+  Logger::log_debug(CLASS_NAME, __FUNCTION__, "Updating odometry");
 
   // Δr = π * countsR * wheelDiameterR  / countsPerWheelRevR
-  float delta_r = compute_delta_r(rightCountsDelta, wheelDiameterRM, rightCountsPerWheelRev);
+  float delta_r = compute_delta_r(deltaRightCounts, wheelDiameterRM, rightCountsPerWheelRev);
 
   // Δl = π * countsL * wheelDiameterL / countsPerWheelRevL
-  float delta_l = compute_delta_l(leftCountsDelta, wheelDiameterLM, leftCountsPerWheelRev);
+  float delta_l = compute_delta_l(deltaLeftCounts, wheelDiameterLM, leftCountsPerWheelRev);
 
   // θ = (Δr - Δl) / W
   float d_theta = compute_d_theta(delta_r, delta_l, trackWidthM);
@@ -63,6 +58,7 @@ void Odometry::update_odom(int deltaLeftCounts, int deltaRightCounts, float &x, 
 #endif
 
   theta += d_theta;
+  theta = normalize_angle_radians(theta);
 
   // Δx = (Δl + Δr) / 2 * cos θ
   float delta_x = compute_delta_x(delta_l, delta_r, theta);
@@ -76,28 +72,23 @@ void Odometry::update_odom(int deltaLeftCounts, int deltaRightCounts, float &x, 
 // ========== UPDATE (IMU-ASSISTED) ==========
 // Wheel kinematics provide translation; gyro provides heading.
 
-void Odometry::update_odom_imu(int deltaLeftCounts,
-                              int deltaRightCounts,
+void Odometry::update_odom_imu(int32_t deltaLeftCounts,
+                              int32_t deltaRightCounts,
                               float gyroZDegPerSec,
                               float dtSeconds,
                               float &x,
                               float &y,
                               float &theta) {
-	Logger::log_info(CLASS_NAME, __FUNCTION__, "Updating odometry (IMU-assisted)");
+  Logger::log_debug(CLASS_NAME, __FUNCTION__, "Updating odometry (IMU-assisted)");
 
-  int leftCountsDelta = deltaLeftCounts;
-  int rightCountsDelta = deltaRightCounts;
-
-  float leftCountsPerWheelRev = compute_ticks_per_rev(encoderLeftCountsPerMotorRev, motorRevsPerWheelRev);
-  float rightCountsPerWheelRev = compute_ticks_per_rev(encoderRightCountsPerMotorRev, motorRevsPerWheelRev);
-
-  float delta_r = compute_delta_r(rightCountsDelta, wheelDiameterRM, rightCountsPerWheelRev);
-  float delta_l = compute_delta_l(leftCountsDelta, wheelDiameterLM, leftCountsPerWheelRev);
+  float delta_r = compute_delta_r(deltaRightCounts, wheelDiameterRM, rightCountsPerWheelRev);
+  float delta_l = compute_delta_l(deltaLeftCounts, wheelDiameterLM, leftCountsPerWheelRev);
 
   // Heading update from gyro z-rate.
   // Any gyro bias calibration is handled upstream (Navigator::configure()).
   float d_theta = compute_dtheta_imu(gyroZDegPerSec, dtSeconds);
   theta += d_theta;
+  theta = normalize_angle_radians(theta);
 
   float delta_x = compute_delta_x(delta_l, delta_r, theta);
   x += delta_x;

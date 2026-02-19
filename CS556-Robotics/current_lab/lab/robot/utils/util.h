@@ -2,6 +2,7 @@
 #define util_h
 
 #include <math.h>
+#include <stdint.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -61,8 +62,8 @@ float compute_wheel_distance(int counts, float diameter, float counts_per_rev);
 float compute_ticks_per_rev(float n, float gearRatio);
 
 // Per-wheel arc lengths from encoder count deltas.
-float compute_delta_l(float leftCountsDelta, float wheelDiameterL, float leftCountsPerWheelRev);
-float compute_delta_r(float rightCountsDelta, float wheelDiameterR, float rightCountsPerWheelRev);
+float compute_delta_l(int32_t leftCountsDelta, float wheelDiameterL, float leftCountsPerWheelRev);
+float compute_delta_r(int32_t rightCountsDelta, float wheelDiameterR, float rightCountsPerWheelRev);
 
 // Heading change from wheel deltas.
 float compute_d_theta(float delta_r, float delta_l, float w);

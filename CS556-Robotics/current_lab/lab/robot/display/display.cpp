@@ -2,7 +2,9 @@
 #include "display.h"
 
 #include "../utils/logger.h"
+#include "../utils/util.h"
 #include <stdio.h>
+#include <stdint.h>
 using namespace Pololu3piPlus32U4;
 
 #undef CLASS_NAME
@@ -11,6 +13,24 @@ using namespace Pololu3piPlus32U4;
 Display::Display() {
   lastUpdateTimeMs = static_cast<uint16_t>(millis()) - 100; // allow immediate first update
   isDisplayReady = false;
+}
+
+// Local helpers to keep OLED formatting consistent and avoid Print overload surprises.
+static void print_float_line(OLED &oled, uint8_t row, const char *label, float value, uint8_t precision) {
+  char buf[16];
+  dtostrf(value, 0, precision, buf);
+  oled.gotoXY(0, row);
+  oled.print(label);
+  oled.print(buf);
+}
+
+static void print_int64_line(OLED &oled, uint8_t row, const char *label, int64_t value) {
+  char buf[20];
+  // AVR snprintf has limited long long support; downcast to long for reliable rendering.
+  snprintf(buf, sizeof(buf), "%ld", (long)value);
+  oled.gotoXY(0, row);
+  oled.print(label);
+  oled.print(buf);
 }
 
 void Display::ensure_oled_ready() {
@@ -33,7 +53,7 @@ void Display::clear() {
   oled.clear();
 }
 
-void Display::print_encoder(float left, float right) {
+void Display::print_encoder(int64_t left, int64_t right) {
   ensure_oled_ready();
 
   if ((uint16_t)(millis() - lastUpdateTimeMs) <= DISPLAY_UPDATE_MS) {
@@ -46,15 +66,8 @@ void Display::print_encoder(float left, float right) {
 
   oled.clear();
 
-  constexpr int kPrecision = 2;
-
-  oled.gotoXY(0, 0);
-  oled.print("left: ");
-  oled.print(left, kPrecision);
-  
-  oled.gotoXY(0, 1);
-  oled.print("right: ");
-  oled.print(right, kPrecision);
+  print_int64_line(oled, 0, "L: ", left);
+  print_int64_line(oled, 1, "R: ", right);
 
 }
 
@@ -71,22 +84,17 @@ void Display::print_odom(float x, float y, float theta) {
 
   oled.clear();
 
-  constexpr int kPrecision = 2;
+  constexpr uint8_t kPrecision = 2;
 
-  oled.gotoXY(0, 0);
-  oled.print("x: ");
-  oled.print(x, kPrecision);
-  
-  oled.gotoXY(0, 1);
-  oled.print("y: ");
-  oled.print(y, kPrecision);
+  // Keep OLED consistent with serial: theta shown in degrees.
+  float thetaDeg = radians_to_degrees(theta);
 
-  oled.gotoXY(0, 2);
-  oled.print("theta: ");
-  oled.print(theta, kPrecision);
+  print_float_line(oled, 0, "x: ", x, kPrecision);
+  print_float_line(oled, 1, "y: ", y, kPrecision);
+  print_float_line(oled, 2, "theta: ", thetaDeg, kPrecision);
 }
 
-void Display::print_odom_and_encoder(float x, float y, float theta, float left, float right) {
+void Display::print_odom_and_encoder(float x, float y, float theta, int64_t left, int64_t right) {
   ensure_oled_ready();
 
   if ((uint16_t)(millis() - lastUpdateTimeMs) <= DISPLAY_UPDATE_MS) {
@@ -99,25 +107,15 @@ void Display::print_odom_and_encoder(float x, float y, float theta, float left, 
 
   oled.clear();
 
-  constexpr int kPrecision = 2;
+  constexpr uint8_t kPrecision = 2;
 
-  oled.gotoXY(0, 0);
-  oled.print("x: ");
-  oled.print(x, kPrecision);
+  float thetaDeg = radians_to_degrees(theta);
 
-  oled.gotoXY(0, 1);
-  oled.print("y: ");
-  oled.print(y, kPrecision);
+  print_float_line(oled, 0, "x: ", x, kPrecision);
+  print_float_line(oled, 1, "y: ", y, kPrecision);
+  print_float_line(oled, 2, "theta: ", thetaDeg, kPrecision);
 
-  oled.gotoXY(0, 2);
-  oled.print("theta: ");
-  oled.print(theta, kPrecision);
-
-  oled.gotoXY(0, 3);
-  oled.print("L: ");
-  oled.print(left, kPrecision);
-
-  oled.gotoXY(0, 4);
-  oled.print("R: ");
-  oled.print(right, kPrecision);
+  // Encoders can exceed 32-bit; render as int64 via snprintf to avoid base misinterpretation.
+  print_int64_line(oled, 3, "L: ", left);
+  print_int64_line(oled, 4, "R: ", right);
 }

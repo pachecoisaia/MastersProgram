@@ -111,11 +111,11 @@ float compute_ticks_per_rev(float n, float gearRatio) {
   return n * gearRatio;
 }
 
-float compute_delta_l(float leftCountsDelta, float wheelDiameterL, float leftCountsPerWheelRev) {
+float compute_delta_l(int32_t leftCountsDelta, float wheelDiameterL, float leftCountsPerWheelRev) {
   return (float)(M_PI * wheelDiameterL * (float)leftCountsDelta / leftCountsPerWheelRev);
 }
 
-float compute_delta_r(float rightCountsDelta, float wheelDiameterR, float rightCountsPerWheelRev) {
+float compute_delta_r(int32_t rightCountsDelta, float wheelDiameterR, float rightCountsPerWheelRev) {
   return (float)(M_PI * wheelDiameterR * (float)rightCountsDelta / rightCountsPerWheelRev);
 }
 

@@ -48,13 +48,13 @@ public:
   void configure() override;
 
   // Update pose from encoder count deltas since the last call.
-  void update_odom(int deltaLeftCounts, int deltaRightCounts, float &x, float &y, float &theta);
+  void update_odom(int32_t deltaLeftCounts, int32_t deltaRightCounts, float &x, float &y, float &theta);
 
   // Optional IMU-assisted update.
   // gyroZDegPerSec: gyro z-rate in deg/s
   // dtSeconds: timestep in seconds
-  void update_odom_imu(int deltaLeftCounts,
-                       int deltaRightCounts,
+  void update_odom_imu(int32_t deltaLeftCounts,
+                       int32_t deltaRightCounts,
                        float gyroZDegPerSec,
                        float dtSeconds,
                        float &x,
@@ -68,6 +68,8 @@ private:
   int encoderLeftCountsPerMotorRev;
   int encoderRightCountsPerMotorRev;
   int motorRevsPerWheelRev;
+  float leftCountsPerWheelRev;
+  float rightCountsPerWheelRev;
 };
 
 #endif

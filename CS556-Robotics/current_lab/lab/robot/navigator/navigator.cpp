@@ -81,6 +81,7 @@ void Navigator::configure() {
 void Navigator::update() {
   Logger::log_info(CLASS_NAME, __FUNCTION__, "Updating position");
 
+  // Grab per-interval deltas and reset hardware counters to avoid double-counting across updates.
   int16_t deltaLeft = Encoders::getCountsAndResetLeft();
   int16_t deltaRight = Encoders::getCountsAndResetRight();
 
@@ -106,8 +107,8 @@ void Navigator::update() {
     float gyroZDegPerSec = (float)imu.g.z * (float)GYRO_SENS_DPS_PER_LSB;
     gyroZDegPerSec -= gyroZBiasDegPerSec;
 
-    odometry.update_odom_imu(static_cast<int>(deltaLeft),
-                            static_cast<int>(deltaRight),
+    odometry.update_odom_imu(static_cast<int32_t>(deltaLeft),
+                static_cast<int32_t>(deltaRight),
                             gyroZDegPerSec,
                             dt,
                             x,
@@ -118,8 +119,8 @@ void Navigator::update() {
 #endif
 
 // Use encoder-only odometry if IMU is not enabled or failed to initialize.
-  odometry.update_odom(static_cast<int>(deltaLeft),
-                       static_cast<int>(deltaRight),
+  odometry.update_odom(static_cast<int32_t>(deltaLeft),
+                       static_cast<int32_t>(deltaRight),
                        x,
                        y,
                        theta);
@@ -130,15 +131,18 @@ float Navigator::getX() const { return x; }
 float Navigator::getY() const { return y; }
 float Navigator::getTheta() const { return theta; }
 
-int32_t Navigator::getLeftEncoderCount() const { return encCountsLeft; }
-int32_t Navigator::getRightEncoderCount() const { return encCountsRight; }
+int64_t Navigator::getLeftEncoderCount() const { return encCountsLeft; }
+int64_t Navigator::getRightEncoderCount() const { return encCountsRight; }
 
 int16_t Navigator::readLeftEncoderRaw() const { return Encoders::getCountsLeft(); }
 int16_t Navigator::readRightEncoderRaw() const { return Encoders::getCountsRight(); }
 
-void Navigator::resetTotalEncoderCounts() {
+void Navigator::reset() {
   encCountsLeft = 0;
   encCountsRight = 0;
+  x=0.0f;
+  y=0.0f;
+  theta=0.0f;
 
   // Clear any deltas that might have accumulated in hardware since the last update.
   Encoders::getCountsAndResetLeft();

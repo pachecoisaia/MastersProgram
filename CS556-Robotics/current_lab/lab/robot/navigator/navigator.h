@@ -44,15 +44,15 @@ public:
   float getY() const;
   float getTheta() const;
 
-  int32_t getLeftEncoderCount() const;
-  int32_t getRightEncoderCount() const;
+  int64_t getLeftEncoderCount() const;
+  int64_t getRightEncoderCount() const;
 
   // Raw (16-bit, can overflow) reads from encoder hardware.
   int16_t readLeftEncoderRaw() const;
   int16_t readRightEncoderRaw() const;
 
   // Resets the cumulative (32-bit) encoder totals and clears pending hardware deltas.
-  void resetTotalEncoderCounts();
+  void reset();
 
 private:
   Odometry odometry;
@@ -64,8 +64,8 @@ private:
   float gyroZBiasDegPerSec = 0.0f;
 #endif
 
-  int32_t encCountsLeft = 0;
-  int32_t encCountsRight = 0;
+  int64_t encCountsLeft = 0;
+  int64_t encCountsRight = 0;
 
   float x = 0.0f;
   float y = 0.0f;

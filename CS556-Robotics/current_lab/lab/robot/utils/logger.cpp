@@ -3,6 +3,7 @@
 #if defined(__AVR_ATmega32U4__)
 #include <avr/io.h>
 #endif
+#include <stdio.h>
 
 #undef CLASS_NAME
 #define CLASS_NAME "Logger"
@@ -10,6 +11,30 @@
 LogLevel Logger::current_level = DEFAULT_LOG_LEVEL;
 unsigned long Logger::baud_rate_ = DEFAULT_BAUD_RATE;
 bool Logger::serial_enabled_ = false;
+static const size_t LOG_LINE_MAX = 128;
+
+// Blocking-but-bounded write: push the whole line in chunks based on availableForWrite().
+static void write_all_serial(const char* line, size_t len) {
+  size_t sent = 0;
+  while (sent < len) {
+    int avail = Serial.availableForWrite();
+    if (avail <= 0) {
+      continue;
+    }
+    size_t chunk = (len - sent < (size_t)avail) ? (len - sent) : (size_t)avail;
+    Serial.write((const uint8_t*)(line + sent), chunk);
+    sent += chunk;
+  }
+}
+
+// Ensure Serial is ready; return false if USB is absent and Serial cannot start.
+bool Logger::ensure_serial_ready(unsigned long baud_rate) {
+  if (serial_enabled_) {
+    return true;
+  }
+  Logger::init(baud_rate);
+  return serial_enabled_;
+}
 
 static bool usb_power_present_() {
 #if defined(__AVR_ATmega32U4__)
@@ -76,24 +101,17 @@ const char* Logger::level_to_string(LogLevel level) {
 
 void Logger::log(LogLevel level, const char* class_name, const char* function_name, const char* message) {
   if (level >= current_level) {
-    // If we booted without USB, allow logging to start later
-    // when USB is plugged in (without blocking).
-    if (!serial_enabled_) {
-      init(baud_rate_);
-      if (!serial_enabled_) {
-        return;
-      }
+    if (!Logger::ensure_serial_ready(baud_rate_)) {
+      return;
     }
 
-    Serial.print("[");
-    Serial.print(level_to_string(level));
-    Serial.print("] ");
-    Serial.print(class_name);
-    Serial.print("::");
-    Serial.print(function_name);
-    Serial.print("() - ");
-    Serial.println(message);
-    Serial.flush();
+    // Format once into a buffer and send it in full (blocking until buffered by HW).
+    char line[LOG_LINE_MAX];
+    int written = snprintf(line, sizeof(line), "[%s] %s::%s() - %s\n",
+                           level_to_string(level), class_name, function_name, message);
+    size_t line_len = (written < 0) ? 0 : (written >= (int)sizeof(line) ? sizeof(line) - 1 : (size_t)written);
+
+    write_all_serial(line, line_len);
   }
 }
 

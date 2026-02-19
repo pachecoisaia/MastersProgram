@@ -37,6 +37,9 @@ class Logger : public Configurable {
     static void log_error(const char* class_name, const char* function_name, const char* message);
     
     static void set_log_level(LogLevel level);
+
+    // Ensure Serial is ready; returns false if USB/Serial not available.
+    static bool ensure_serial_ready(unsigned long baud_rate);
     
   private:
     Logger();  // Private constructor for singleton

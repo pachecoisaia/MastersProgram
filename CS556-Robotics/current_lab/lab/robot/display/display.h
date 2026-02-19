@@ -2,6 +2,7 @@
 #define display_h
 
 #include <Pololu3piPlus32U4.h>
+#include <stdint.h>
 using namespace Pololu3piPlus32U4;
 
 // Update periods (ms)
@@ -12,9 +13,9 @@ public:
   Display();
 
   void clear();
-  void print_encoder(float left, float right);
+  void print_encoder(int64_t left, int64_t right);
   void print_odom(float x, float y, float theta);
-  void print_odom_and_encoder(float x, float y, float theta, float left, float right);
+  void print_odom_and_encoder(float x, float y, float theta, int64_t left, int64_t right);
 
 private:
   void ensure_oled_ready();

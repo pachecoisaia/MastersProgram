@@ -45,6 +45,24 @@ void DifferentialDrive::drive_backward(int speed_mm_per_s) {
   motors.setSpeeds(-speed_mm_per_s, -speed_mm_per_s);
 }
 
+// ========== NON-BLOCKING CONTINUOUS HELPERS ==========
+
+void DifferentialDrive::drive_forward_unbounded(int speed_mm_per_s) {
+  drive_forward(speed_mm_per_s);
+}
+
+void DifferentialDrive::drive_backward_unbounded(int speed_mm_per_s) {
+  drive_backward(speed_mm_per_s);
+}
+
+void DifferentialDrive::turn_left_unbounded(int speed_mm_per_s) {
+  turn_left_low_level(speed_mm_per_s);
+}
+
+void DifferentialDrive::turn_right_unbounded(int speed_mm_per_s) {
+  turn_right_low_level(speed_mm_per_s);
+}
+
 void DifferentialDrive::turn_left_low_level(int speed_mm_per_s) {
   Logger::log_debug(CLASS_NAME, __FUNCTION__, "Turning left");
   motors.setSpeeds(-speed_mm_per_s, speed_mm_per_s);

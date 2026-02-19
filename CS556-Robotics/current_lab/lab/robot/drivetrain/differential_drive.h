@@ -154,6 +154,12 @@ class DifferentialDrive : public Configurable {
     //       speed_m_per_s - outer wheel speed in m/s (0.0 to 0.4)
     // Return: void
     void move_backward_turning_right(float distance_m, float speed_m_per_s);
+
+    // Continuous low-level helpers (non-blocking, no delay): caller must halt() when done.
+    void drive_forward_unbounded(int speed_mm_per_s);
+    void drive_backward_unbounded(int speed_mm_per_s);
+    void turn_left_unbounded(int speed_mm_per_s);
+    void turn_right_unbounded(int speed_mm_per_s);
     
     // ========== CONFIGURATION ==========
     

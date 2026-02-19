@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "../robot.h"
 #include "../utils/logger.h"
@@ -15,7 +16,8 @@ extern Robot robot;
 
 // ========== HELPER FUNCTIONS ==========
 static void print_odom_serial(float x, float y, float theta) {
-  char msg[128];
+  constexpr size_t buf_sz = 128;
+  char msg[buf_sz];
   char xBuf[16];
   char yBuf[16];
   char thetaDegBuf[16];
@@ -26,20 +28,22 @@ static void print_odom_serial(float x, float y, float theta) {
   dtostrf(y, 0, 4, yBuf);
   dtostrf(thetaDeg, 0, 2, thetaDegBuf);
 
-  snprintf(msg, sizeof(msg), "odom: x=%s, y=%s, theta(deg)=%s", xBuf, yBuf, thetaDegBuf);
+  snprintf(msg, buf_sz, "odom: x=%s, y=%s, theta(deg)=%s", xBuf, yBuf, thetaDegBuf);
   Logger::log_info(CLASS_NAME, __FUNCTION__, msg);
 }
 
-static void print_encoder_serial(int left, int right) {
-  char msg[96];
-  snprintf(msg, sizeof(msg), "encoders: left=%d, right=%d", left, right);
+static void print_encoder_serial(int64_t left, int64_t right) {
+  // AVR printf does not reliably support %lld; downcast to long for logging.
+  constexpr size_t buf_sz = 64;
+  char msg[buf_sz];
+  snprintf(msg, buf_sz, "encoders: left=%ld, right=%ld", (long)left, (long)right);
   Logger::log_info(CLASS_NAME, __FUNCTION__, msg);
 }
 
 void print_nav_odom_and_encoders() {
 
-  int leftEnc = robot.navigator->getLeftEncoderCount();
-  int rightEnc = robot.navigator->getRightEncoderCount();
+  int64_t leftEnc = robot.navigator->getLeftEncoderCount();
+  int64_t rightEnc = robot.navigator->getRightEncoderCount();
   
   float x = robot.navigator->getX();
   float y = robot.navigator->getY();
@@ -55,8 +59,8 @@ void print_nav_odom_and_encoders() {
 
 void print_nav_encoders() {
 
-  int leftEnc = robot.navigator->getLeftEncoderCount();
-  int rightEnc = robot.navigator->getRightEncoderCount();
+  int64_t leftEnc = robot.navigator->getLeftEncoderCount();
+  int64_t rightEnc = robot.navigator->getRightEncoderCount();
 
   print_encoder_serial(leftEnc, rightEnc);
 
@@ -65,19 +69,27 @@ void print_nav_encoders() {
 }
 
 void reset_nav_test_state() {
-  robot.navigator->resetTotalEncoderCounts();
+  robot.navigator->reset();
   robot.display->clear();
   print_nav_odom_and_encoders();
 }
 
 void drive_forward_with_updates(float distance_m, float speed_m_per_s, bool encoder_only = false) {
-  const float segment_m = 0.1f;
+  const unsigned long UPDATE_DELAY_MS = 20;
 
-  float remaining_m = distance_m;
-  while (remaining_m > 0.0f) {
-    float step_m = remaining_m > segment_m ? segment_m : remaining_m;
-    robot.drive->move_forward(step_m, speed_m_per_s);
+  float start_x = robot.navigator->getX();
+  float start_y = robot.navigator->getY();
+
+  int speed_mm_per_s = (int)meters_per_s_to_mm_per_s(speed_m_per_s);
+  robot.drive->drive_forward_unbounded(speed_mm_per_s);
+
+  while (true) {
+    delay(UPDATE_DELAY_MS);
     robot.navigator->update();
+
+    float dx = robot.navigator->getX() - start_x;
+    float dy = robot.navigator->getY() - start_y;
+    float traveled = sqrtf(dx * dx + dy * dy);
 
     if (!encoder_only) {
       print_nav_odom_and_encoders();
@@ -85,18 +97,28 @@ void drive_forward_with_updates(float distance_m, float speed_m_per_s, bool enco
       print_nav_encoders();
     }
 
-    remaining_m -= step_m;
+    if (traveled >= distance_m) {
+      break;
+    }
   }
 }
 
 void drive_backward_with_updates(float distance_m, float speed_m_per_s, bool encoder_only = false) {
-  const float segment_m = 0.1f;
+  const unsigned long UPDATE_DELAY_MS = 20;
 
-  float remaining_m = distance_m;
-  while (remaining_m > 0.0f) {
-    float step_m = remaining_m > segment_m ? segment_m : remaining_m;
-    robot.drive->move_backward(step_m, speed_m_per_s);
+  float start_x = robot.navigator->getX();
+  float start_y = robot.navigator->getY();
+
+  int speed_mm_per_s = (int)meters_per_s_to_mm_per_s(speed_m_per_s);
+  robot.drive->drive_backward_unbounded(speed_mm_per_s);
+
+  while (true) {
+    delay(UPDATE_DELAY_MS);
     robot.navigator->update();
+
+    float dx = robot.navigator->getX() - start_x;
+    float dy = robot.navigator->getY() - start_y;
+    float traveled = sqrtf(dx * dx + dy * dy);
 
     if (!encoder_only) {
       print_nav_odom_and_encoders();
@@ -104,35 +126,46 @@ void drive_backward_with_updates(float distance_m, float speed_m_per_s, bool enc
       print_nav_encoders();
     }
 
-    remaining_m -= step_m;
+    if (traveled >= distance_m) {
+      break;
+    }
   }
 }
 
 void rotate_with_updates(float theta_rad, float speed_m_per_s, bool encoder_only = false) {
-  const float segment_rad = degrees_to_radians(15.0f);
+  const unsigned long UPDATE_DELAY_MS = 20;
 
   const bool turn_left = theta_rad >= 0.0f;
-  float remaining_rad = turn_left ? theta_rad : -theta_rad;
+  float target_mag = turn_left ? theta_rad : -theta_rad;
 
-  while (remaining_rad > 0.0f) {
-    float step_rad = remaining_rad > segment_rad ? segment_rad : remaining_rad;
+  float start_theta = robot.navigator->getTheta();
 
-    if (turn_left) {
-      robot.drive->turn_left(step_rad, speed_m_per_s, TurnMode::ANGLE);
-    } else {
-      robot.drive->turn_right(step_rad, speed_m_per_s, TurnMode::ANGLE);
-    }
+  int speed_mm_per_s = (int)meters_per_s_to_mm_per_s(speed_m_per_s);
+  if (turn_left) {
+    robot.drive->turn_left_unbounded(speed_mm_per_s);
+  } else {
+    robot.drive->turn_right_unbounded(speed_mm_per_s);
+  }
 
+  while (true) {
+    delay(UPDATE_DELAY_MS);
     robot.navigator->update();
-    
+
+    float dtheta = normalize_angle_radians(robot.navigator->getTheta() - start_theta);
+    float mag = turn_left ? dtheta : -dtheta;
+
     if (!encoder_only) {
       print_nav_odom_and_encoders();
     } else {
       print_nav_encoders();
     }
 
-    remaining_rad -= step_rad;
+    if (mag >= target_mag) {
+      break;
+    }
   }
+
+  robot.drive->halt();
 }
 
 // ========== TEST TASKS ==========
@@ -196,7 +229,7 @@ void test_3_2a_straight_line_15m() {
   reset_nav_test_state();
   
   bool encoder_only = false;
-  drive_forward_with_updates(SQUARE_DIST_M, SQUARE_SPEED_MPS, encoder_only);
+  drive_forward_with_updates(15.0f, SQUARE_SPEED_MPS, encoder_only);
   
   robot.drive->halt();
 }
@@ -212,7 +245,7 @@ void test_3_2b_square_clockwise() {
 
   for (int i = 0; i < 4; ++i) {
     drive_forward_with_updates(SQUARE_DIST_M, SQUARE_SPEED_MPS, encoder_only);
-    rotate_with_updates(SQUARE_ANGLE_RAD, SQUARE_SPEED_MPS, encoder_only);
+    rotate_with_updates(-SQUARE_ANGLE_RAD, SQUARE_SPEED_MPS, encoder_only);
     delay(DELAY_SHORT_MS);
   }
 
