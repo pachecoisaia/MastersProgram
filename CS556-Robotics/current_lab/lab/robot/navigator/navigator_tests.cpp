@@ -42,8 +42,8 @@ static void print_encoder_serial(int64_t left, int64_t right) {
 
 void print_nav_odom_and_encoders() {
 
-  int64_t leftEnc = robot.navigator->getLeftEncoderCount();
-  int64_t rightEnc = robot.navigator->getRightEncoderCount();
+  int64_t leftEnc = robot.navigator->getTotalLeftEncoderCount();
+  int64_t rightEnc = robot.navigator->getTotalRightEncoderCount();
   
   float x = robot.navigator->getX();
   float y = robot.navigator->getY();
@@ -59,8 +59,8 @@ void print_nav_odom_and_encoders() {
 
 void print_nav_encoders() {
 
-  int64_t leftEnc = robot.navigator->getLeftEncoderCount();
-  int64_t rightEnc = robot.navigator->getRightEncoderCount();
+  int64_t leftEnc = robot.navigator->getTotalLeftEncoderCount();
+  int64_t rightEnc = robot.navigator->getTotalRightEncoderCount();
 
   print_encoder_serial(leftEnc, rightEnc);
 
@@ -137,8 +137,8 @@ void turn_left_with_updates(float theta_rad, float speed_m_per_s, bool encoder_o
 void test_2_1_test_encoders_still() {
   Logger::log_info(CLASS_NAME, __FUNCTION__, "Task 2.1: encoders while still");
 
-  int left = (int)robot.navigator->getLeftEncoderCount();
-  int right = (int)robot.navigator->getRightEncoderCount();
+  int left = (int)robot.navigator->getTotalLeftEncoderCount();
+  int right = (int)robot.navigator->getTotalRightEncoderCount();
 
   print_encoder_serial(left, right);
   robot.display->print_encoder(left, right);

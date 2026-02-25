@@ -16,15 +16,19 @@ public:
   float getX() const;
   float getY() const;
   float getTheta() const;
-  int getLeftEncoderCount() const;
-  int getRightEncoderCount() const;
+  int getTotalLeftEncoderCount() const;
+  int getTotalRightEncoderCount() const;
 
 private:
   Odometry odometry;
+  Encoders encoder;
 
   float x = 0.0f;
   float y = 0.0f;
   float theta = 0.0f;
+
+  int totalLeftCounts = 0;
+  int totalRightCounts = 0;
 };
 
 #endif

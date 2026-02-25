@@ -126,11 +126,14 @@ void DifferentialDrive::move_forward(float distance_m, float speed_m_per_s) {
   }
   
   int speed_mm_per_s = (int)meters_per_s_to_mm_per_s(speed_m_per_s);
-  int duration_ms = calculate_motion_duration_ms(distance_m, speed_m_per_s);
-  
   drive_forward(speed_mm_per_s);
+
+  int duration_ms = calculate_motion_duration_ms(distance_m, speed_m_per_s);
   delay(duration_ms);
+
   halt();
+
+  delay(3000);
 }
 
 void DifferentialDrive::move_backward(float distance_m, float speed_m_per_s) {

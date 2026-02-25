@@ -46,10 +46,10 @@ void setup() {
 
 void loop() {  
   //test_2_1_test_encoders_still();
-  //test_2_2a_move_forward_1m();
+  test_2_2a_move_forward_1m();
   //test_2_2b_move_backward_1m();
   //test_2_2c_turn_left_90();
   //test_3_2a_straight_line_15m();
   //test_3_2b_square_clockwise();
-  test_3_2e_square_counter_clockwise();
+  //test_3_2e_square_counter_clockwise();
 }

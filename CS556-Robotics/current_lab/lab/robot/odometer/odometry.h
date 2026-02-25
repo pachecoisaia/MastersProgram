@@ -17,8 +17,8 @@ class Odometry {
 public:
   Odometry();
 
-  void update_odom(int32_t left_counts, int32_t right_counts, float &x, float &y, float &theta);
-  void update_odom_imu(int32_t left_counts, int32_t right_counts, float &x, float &y, float &theta);
+  void update_odom(int left_counts, int right_counts, float &x, float &y, float &theta);
+  void update_odom_imu(int left_counts, int right_counts, float &x, float &y, float &theta);
 
 private:
   float _diaL;
