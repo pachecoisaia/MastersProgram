@@ -6,3 +6,6 @@
 
 # Output files
 *.csv
+
+# PDF files
+*.pdf
