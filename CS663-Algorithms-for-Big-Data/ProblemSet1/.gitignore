@@ -1,0 +1,8 @@
+.venv/
+
+# Downloaded datasets
+*.gz
+*.zip
+
+# Output files
+*.csv
